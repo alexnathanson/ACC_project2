@@ -1,3 +1,3 @@
 # ACC_project2
 
-Alex Nathanson + Kevin
+Alex Nathanson + Kevin Li

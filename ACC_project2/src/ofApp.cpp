@@ -43,6 +43,9 @@ void ofApp::setup() {
 	udpConnection.Bind(11999);
 	udpConnection.Connect("192.168.1.255",11999);
 	udpConnection.SetNonBlocking(true);
+
+	myIP = getLocalIPs();
+	//std::cout << myIP[0] << "\n";
 }
 
 //--------------------------------------------------------------
@@ -52,6 +55,7 @@ void ofApp::update() {
 	//-------UDP stuff----------------------------
 	char udpMessage[100000];
 	udpConnection.Receive(udpMessage, 100000);
+
 	string message = udpMessage;
 	if (message != "") {
 		remoteStroke.clear();
@@ -105,7 +109,9 @@ void ofApp::draw() {
 	ofDrawRectangle(0, 0, 200, 30);
 	ofSetHexColor(0x101010);
 	ofDrawBitmapString("Remote CV", 10, 20);
-	ofDrawBitmapString("drag to draw", 10, 50);
+	ofDrawBitmapString("Your local IP address: " + myIP[0], 10, 40);
+	ofDrawBitmapString("Your partner's IP address: " + myIP[0], 10, 60); //retrieving the remote IP hasn't been written yet
+	ofDrawBitmapString("drag to draw", 10, 80);
 
 
 	//----openCV stuff ---------------------------------------------------
@@ -221,4 +227,63 @@ void ofApp::gotMessage(ofMessage msg) {
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo) {
 
+}
+
+vector<string> ofApp::getLocalIPs()
+{
+	vector<string> result;
+
+#ifdef TARGET_WIN32
+
+	string commandResult = ofSystem("ipconfig");
+	//ofLogVerbose() << commandResult;
+
+	for (int pos = 0; pos >= 0; )
+	{
+		pos = commandResult.find("IPv4", pos);
+
+		if (pos >= 0)
+		{
+			pos = commandResult.find(":", pos) + 2;
+			int pos2 = commandResult.find("\n", pos);
+
+			string ip = commandResult.substr(pos, pos2 - pos);
+
+			pos = pos2;
+
+			if (ip.substr(0, 3) != "127") // let's skip loopback addresses
+			{
+				result.push_back(ip);
+				//ofLogVerbose() << ip;
+			}
+		}
+	}
+
+#else
+
+	string commandResult = ofSystem("ifconfig");
+
+	for (int pos = 0; pos >= 0; )
+	{
+		pos = commandResult.find("inet ", pos);
+
+		if (pos >= 0)
+		{
+			int pos2 = commandResult.find("netmask", pos);
+
+			string ip = commandResult.substr(pos + 5, pos2 - pos - 6);
+
+			pos = pos2;
+
+			if (ip.substr(0, 3) != "127") // let's skip loopback addresses
+			{
+				result.push_back(ip);
+				//ofLogVerbose() << ip;
+			}
+		}
+	}
+
+#endif
+
+	return result;
 }

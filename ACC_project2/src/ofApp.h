@@ -56,5 +56,12 @@ public:
 	vector<ofPoint> stroke;
 
 	vector<ofPoint> remoteStroke;
+
+	vector<string> myIP;
+	vector<string> remIP;
+
+	//a function for retrieving your local IP, written by davidemania
+	//https://forum.openframeworks.cc/t/getting-ip-address-of-local-machine/27404
+	vector<string> ofApp::getLocalIPs();
 };
 

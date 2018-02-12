@@ -1,10 +1,15 @@
 #include "ofApp.h"
 
+#define RECONNECT_TIME 400
+
 //ACC Project 2
 //Group members: Alex Nathanson & Kevin Li
 
 //--------------------------------------------------------------
 void ofApp::setup() {
+	// we don't want to be running to fast
+	ofSetVerticalSync(true);
+	ofSetFrameRate(60);
 
 	/*
 	vidPlayer.load("fingers.mov");
@@ -28,12 +33,41 @@ void ofApp::setup() {
 
 	//makes it so it doesn't clear the background automatically
 	ofSetBackgroundAuto(false);
+
+	//------UDP Stuff----------------------------------------------------------------------------------------
+	
+
+	//create the socket and set to send to 127.0.0.1:11999
+	udpConnection.Create();
+	//127.0.0.1
+	udpConnection.Bind(11999);
+	udpConnection.Connect("192.168.1.255",11999);
+	udpConnection.SetNonBlocking(true);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 	//ofBackground(100,100,100);
 
+	//-------UDP stuff----------------------------
+	char udpMessage[100000];
+	udpConnection.Receive(udpMessage, 100000);
+	string message = udpMessage;
+	if (message != "") {
+		remoteStroke.clear();
+		float x, y;
+		vector<string> strPoints = ofSplitString(message, "[/p]");
+		for (unsigned int i = 0; i<strPoints.size(); i++) {
+			vector<string> point = ofSplitString(strPoints[i], "|");
+			if (point.size() == 2) {
+				x = atof(point[0].c_str());
+				y = atof(point[1].c_str());
+				remoteStroke.push_back(ofPoint(x, y));
+			}
+		}
+	}
+
+	//---- openCV stuff ------------------------------------------------------
 	bool bNewFrame = false;
 
 	vidGrabber.update();
@@ -65,6 +99,16 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
+	// ------text--------------
+	ofFill();
+	//ofSetHexColor(0xFFFFFF);
+	ofDrawRectangle(0, 0, 200, 30);
+	ofSetHexColor(0x101010);
+	ofDrawBitmapString("Remote CV", 10, 20);
+	ofDrawBitmapString("drag to draw", 10, 50);
+
+
+	//----openCV stuff ---------------------------------------------------
 
 	// draw the incoming video image
 	ofSetHexColor(0xffffff);
@@ -77,10 +121,33 @@ void ofApp::draw() {
 		ofSetColor(ofColor::fuchsia);
 		ofFill();
 		ofDrawEllipse(contourFinder.blobs[i].boundingRect.getCenter(), 20, 20);
+		
+		//get the position data
+		posData = ofToString(contourFinder.blobs[i].boundingRect.getCenter());
+		//std:cout << "Pos Data: " << posData << "\n";
+
 	}
 	ofPopMatrix();
 
 	ofDrawBitmapString("Press 'v' to toggle video and path drawing", ofGetWidth() / 2.0, ofGetHeight() - 100.0);
+
+	//--------UDP Stuff------------------------------------
+	//draw local data
+
+	ofPushStyle();
+	for (unsigned int i = 1; i<stroke.size(); i++) {
+		ofDrawLine(stroke[i - 1].x, stroke[i - 1].y, stroke[i].x, stroke[i].y);
+	}
+	ofPopStyle();
+
+	//draw remote data
+	ofPushStyle();
+	//color of remote image
+	ofSetColor(0, 255, 0);
+	for (unsigned int i = 1; i<remoteStroke.size(); i++) {
+		ofDrawLine(remoteStroke[i - 1].x, remoteStroke[i - 1].y, remoteStroke[i].x, remoteStroke[i].y);
+	}
+	ofPopStyle();
 }
 
 //--------------------------------------------------------------
@@ -114,7 +181,7 @@ void ofApp::mouseMoved(int x, int y) {
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button) {
-
+	stroke.push_back(ofPoint(x, y));
 }
 
 //--------------------------------------------------------------
@@ -124,7 +191,11 @@ void ofApp::mousePressed(int x, int y, int button) {
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button) {
-
+	string message = "";
+	for (unsigned int i = 0; i<stroke.size(); i++) {
+		message += ofToString(stroke[i].x) + "|" + ofToString(stroke[i].y) + "[/p]";
+	}
+	udpConnection.Send(message.c_str(), message.length());
 }
 
 //--------------------------------------------------------------

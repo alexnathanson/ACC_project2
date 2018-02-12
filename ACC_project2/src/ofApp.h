@@ -3,6 +3,7 @@
 #include "ofMain.h"
 
 #include "ofxOpenCv.h"
+#include "ofxNetwork.h"
 
 #define _USE_LIVE_VIDEO		// uncomment this to use a live camera
 // otherwise, we'll use a movie file
@@ -44,6 +45,16 @@ public:
 	bool				bLearnBakground;
 	bool				bShowVideo = true;
 
+	//variable to send data
+	string posData;
+	
+	//UDP stuff
+	ofxUDPManager udpConnection;
 
+	ofTrueTypeFont  mono;
+	ofTrueTypeFont  monosm;
+	vector<ofPoint> stroke;
+
+	vector<ofPoint> remoteStroke;
 };
 

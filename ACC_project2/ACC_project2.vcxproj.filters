@@ -13,6 +13,18 @@
 		<ClCompile Include="src\ofApp.cpp">
 			<Filter>src</Filter>
 		</ClCompile>
+		<ClCompile Include="..\..\..\..\..\..\OpenframeWorks\of_v0.9.8_vs_release\addons\ofxNetwork\src\ofxTCPClient.cpp">
+			<Filter>addons\ofxNetwork\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\..\..\..\OpenframeWorks\of_v0.9.8_vs_release\addons\ofxNetwork\src\ofxTCPManager.cpp">
+			<Filter>addons\ofxNetwork\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\..\..\..\OpenframeWorks\of_v0.9.8_vs_release\addons\ofxNetwork\src\ofxTCPServer.cpp">
+			<Filter>addons\ofxNetwork\src</Filter>
+		</ClCompile>
+		<ClCompile Include="..\..\..\..\..\..\OpenframeWorks\of_v0.9.8_vs_release\addons\ofxNetwork\src\ofxUDPManager.cpp">
+			<Filter>addons\ofxNetwork\src</Filter>
+		</ClCompile>
 		<ClCompile Include="..\..\..\..\..\..\OpenframeWorks\of_v0.9.8_vs_release\addons\ofxOpenCv\src\ofxCvColorImage.cpp">
 			<Filter>addons\ofxOpenCv\src</Filter>
 		</ClCompile>
@@ -41,6 +53,12 @@
 		</Filter>
 		<Filter Include="addons">
 			<UniqueIdentifier>{71834F65-F3A9-211E-73B8-DC85}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxNetwork">
+			<UniqueIdentifier>{01A15744-29A6-108D-08E9-83A7}</UniqueIdentifier>
+		</Filter>
+		<Filter Include="addons\ofxNetwork\src">
+			<UniqueIdentifier>{3D1C10C7-8F35-E796-9C70-F5F3}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="addons\ofxOpenCv">
 			<UniqueIdentifier>{FFA81411-43B9-BD99-75AF-1DC3}</UniqueIdentifier>
@@ -133,6 +151,24 @@
 		</ClInclude>
 		<ClInclude Include="src\ofApp.h">
 			<Filter>src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\..\..\..\OpenframeWorks\of_v0.9.8_vs_release\addons\ofxNetwork\src\ofxNetwork.h">
+			<Filter>addons\ofxNetwork\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\..\..\..\OpenframeWorks\of_v0.9.8_vs_release\addons\ofxNetwork\src\ofxNetworkUtils.h">
+			<Filter>addons\ofxNetwork\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\..\..\..\OpenframeWorks\of_v0.9.8_vs_release\addons\ofxNetwork\src\ofxTCPClient.h">
+			<Filter>addons\ofxNetwork\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\..\..\..\OpenframeWorks\of_v0.9.8_vs_release\addons\ofxNetwork\src\ofxTCPManager.h">
+			<Filter>addons\ofxNetwork\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\..\..\..\OpenframeWorks\of_v0.9.8_vs_release\addons\ofxNetwork\src\ofxTCPServer.h">
+			<Filter>addons\ofxNetwork\src</Filter>
+		</ClInclude>
+		<ClInclude Include="..\..\..\..\..\..\OpenframeWorks\of_v0.9.8_vs_release\addons\ofxNetwork\src\ofxUDPManager.h">
+			<Filter>addons\ofxNetwork\src</Filter>
 		</ClInclude>
 		<ClInclude Include="..\..\..\..\..\..\OpenframeWorks\of_v0.9.8_vs_release\addons\ofxOpenCv\src\ofxCvBlob.h">
 			<Filter>addons\ofxOpenCv\src</Filter>

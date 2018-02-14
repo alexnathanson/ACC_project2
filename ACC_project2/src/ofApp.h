@@ -62,6 +62,7 @@ public:
 	vector<string> remIP;
 
 	//a function for retrieving your local IP, written by davidemania
+	// this uses the command line rather than GetListenAddr
 	//https://forum.openframeworks.cc/t/getting-ip-address-of-local-machine/27404
 	vector<string> ofApp::getLocalIPs();
 
@@ -69,6 +70,9 @@ public:
 
 	float xScaler;
 	float yScaler;
+
+	string ipAddress;
+	bool firstConnection;
 
 };
 

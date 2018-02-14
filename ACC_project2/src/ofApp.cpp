@@ -5,6 +5,10 @@
 //ACC Project 2
 //Group members: Alex Nathanson & Kevin Li
 
+//To do 2.14
+// get more openCV things
+// connect a particle thing to this
+
 //--------------------------------------------------------------
 void ofApp::setup() {
 	// we don't want to be running to fast
@@ -49,7 +53,9 @@ void ofApp::setup() {
 	udpConnection.SetNonBlocking(true);
 
 	myIP = getLocalIPs();
-	//std::cout << myIP[0] << "\n";
+
+	ipAddress = "";
+	firstConnection = false;
 
 }
 
@@ -61,17 +67,31 @@ void ofApp::update() {
 	char udpMessage[100000];
 	udpConnection.Receive(udpMessage, 100000);
 
-	/*
-	if (udpMessage) {
-		string addr = ofToString(udpConnection.GetRemoteAddr(udpMessage));
-		//to do: check if it's a new addr, if so add it to list
-		remIP[0] = "test ip";
+	//string remIP;
+	int ipPort = 11999;
+
+	//remIP is a vector so we could expand this for more than 2 networked users
+	remIP.clear();
+	remIP.push_back(" ");
+	bool success = udpConnection.GetRemoteAddr(remIP[0], ipPort);
+
+	if (success == true)
+	{
+		ipAddress = ofToString(remIP[0]);
+		std::cout << "Ip Address: " << ipAddress << "\n";
+		firstConnection = true;
 	}
-	else if (!udpMessage){
-		remIP[0] = "No Connection";
-	}*/
+	else
+	{
+	   // failure
+		if (firstConnection == false) {
+			ipAddress = "No connection";
+		}
+	}
 
 	string message = udpMessage;
+
+	//store incoming messages
 	if (message != "") {
 		remoteStroke.clear();
 		float x, y;
@@ -135,7 +155,7 @@ void ofApp::draw() {
 	ofSetHexColor(0x101010);
 	ofDrawBitmapString("Remote CV", 10, 20);
 	ofDrawBitmapString("Your local IP address: " + myIP[0], 10, 40);
-	ofDrawBitmapString("Your partner's IP address: " + myIP[0], 10, 60); //retrieving the remote IP hasn't been written yet
+	ofDrawBitmapString("Your partner's IP address: " + ipAddress, 10, 60); //retrieving the remote IP hasn't been written yet
 	ofDrawBitmapString("Your color is: " + ofToString(urColor), 10, 80);
 	ofDrawBitmapString("drag to draw", 10, 100);
 
@@ -257,6 +277,7 @@ void ofApp::dragEvent(ofDragInfo dragInfo) {
 
 }
 
+//this method gets your local IP via the command line... not the most elegant.
 vector<string> ofApp::getLocalIPs()
 {
 	vector<string> result;

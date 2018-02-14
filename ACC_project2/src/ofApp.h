@@ -46,8 +46,9 @@ public:
 	bool				bShowVideo = true;
 
 	//variable to send data
-	string posData;
-	
+	vector<ofPoint> posData;
+	vector<ofPoint> scaleData;
+
 	//UDP stuff
 	ofxUDPManager udpConnection;
 
@@ -63,5 +64,11 @@ public:
 	//a function for retrieving your local IP, written by davidemania
 	//https://forum.openframeworks.cc/t/getting-ip-address-of-local-machine/27404
 	vector<string> ofApp::getLocalIPs();
+
+	ofColor urColor;
+
+	float xScaler;
+	float yScaler;
+
 };
 

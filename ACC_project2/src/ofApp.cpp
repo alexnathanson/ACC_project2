@@ -11,6 +11,8 @@ void ofApp::setup() {
 	ofSetVerticalSync(true);
 	ofSetFrameRate(60);
 
+	urColor = 0, 255, 0;
+
 	/*
 	vidPlayer.load("fingers.mov");
 	vidPlayer.play();
@@ -19,6 +21,7 @@ void ofApp::setup() {
 
 	vidGrabber.setVerbose(true);
 	vidGrabber.setDeviceID(0);
+	//were running open CV on this smaller image, but scaling up the data
 	vidGrabber.initGrabber(320, 240);
 	//vidGrabber.videoSettings();
 
@@ -39,22 +42,34 @@ void ofApp::setup() {
 
 	//create the socket and set to send to 127.0.0.1:11999
 	udpConnection.Create();
-	//127.0.0.1
+	//127.0.0.1 for loop back
+	//192.168.1.255 to "splat on a given subnet, end it with 255 (a general splat address 255.255.255.255 has problems with some firewall settings
 	udpConnection.Bind(11999);
-	udpConnection.Connect("192.168.1.255",11999);
+	udpConnection.Connect("127.0.0.1",11999);
 	udpConnection.SetNonBlocking(true);
 
 	myIP = getLocalIPs();
 	//std::cout << myIP[0] << "\n";
+
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	//ofBackground(100,100,100);
+	ofBackground(200,200,200);
 
 	//-------UDP stuff----------------------------
 	char udpMessage[100000];
 	udpConnection.Receive(udpMessage, 100000);
+
+	/*
+	if (udpMessage) {
+		string addr = ofToString(udpConnection.GetRemoteAddr(udpMessage));
+		//to do: check if it's a new addr, if so add it to list
+		remIP[0] = "test ip";
+	}
+	else if (!udpMessage){
+		remIP[0] = "No Connection";
+	}*/
 
 	string message = udpMessage;
 	if (message != "") {
@@ -76,7 +91,6 @@ void ofApp::update() {
 
 	vidGrabber.update();
 
-	//vidPlayer.update();
 	bNewFrame = vidGrabber.isFrameNew();
 
 	if (bNewFrame) {
@@ -97,7 +111,18 @@ void ofApp::update() {
 		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
 		// also, find holes is set to true so we will get interior contours as well....
 		contourFinder.findContours(grayDiff, 20, (340 * 240) / 3, 10, true);	// find holes
+
+		//this vector needs to be reset everytime
+		posData.clear();
+		scaleData.clear();
+		for (int i = 0; i < contourFinder.nBlobs; i++) {
+			posData.push_back(contourFinder.blobs[i].boundingRect.getCenter());
+			scaleData.push_back(posData[i]);
+			scaleData[i][0] = ofMap(scaleData[i][0], 0.0, 320.0, 0.0, 1024.0, true);
+			scaleData[i][1] = ofMap(scaleData[i][1], 0.0, 240.0, 0.0, 768.0, true);
+		}
 	}
+
 
 }
 
@@ -111,7 +136,8 @@ void ofApp::draw() {
 	ofDrawBitmapString("Remote CV", 10, 20);
 	ofDrawBitmapString("Your local IP address: " + myIP[0], 10, 40);
 	ofDrawBitmapString("Your partner's IP address: " + myIP[0], 10, 60); //retrieving the remote IP hasn't been written yet
-	ofDrawBitmapString("drag to draw", 10, 80);
+	ofDrawBitmapString("Your color is: " + ofToString(urColor), 10, 80);
+	ofDrawBitmapString("drag to draw", 10, 100);
 
 
 	//----openCV stuff ---------------------------------------------------
@@ -123,17 +149,19 @@ void ofApp::draw() {
 	if (bShowVideo) {
 		colorImg.draw(0, 0);
 	}
+	//draw the dots on the image
+	for (int i = 0; i < contourFinder.nBlobs; i++) {
+		ofSetColor(ofColor::green);
+		ofFill();
+		ofDrawEllipse(posData[i], 20, 20);
+	}
+	ofPopMatrix();
+
 	for (int i = 0; i < contourFinder.nBlobs; i++) {
 		ofSetColor(ofColor::fuchsia);
 		ofFill();
-		ofDrawEllipse(contourFinder.blobs[i].boundingRect.getCenter(), 20, 20);
-		
-		//get the position data
-		posData = ofToString(contourFinder.blobs[i].boundingRect.getCenter());
-		//std:cout << "Pos Data: " << posData << "\n";
-
+		ofDrawEllipse(scaleData[i], 20, 20);
 	}
-	ofPopMatrix();
 
 	ofDrawBitmapString("Press 'v' to toggle video and path drawing", ofGetWidth() / 2.0, ofGetHeight() - 100.0);
 

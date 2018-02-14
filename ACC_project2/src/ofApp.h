@@ -74,5 +74,10 @@ public:
 	string ipAddress;
 	bool firstConnection;
 
+	//determines the splat address for a given subnet
+	// only tested on mac - syntax might need to be adapted for other OS
+	void getSplat(string locIP);
+	string subnetSplat;
+
 };
 

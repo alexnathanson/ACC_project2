@@ -43,16 +43,18 @@ void ofApp::setup() {
 
 	//------UDP Stuff----------------------------------------------------------------------------------------
 	
+	myIP = getLocalIPs();
+	getSplat(myIP[0]);
+
+	const char *charSplat = subnetSplat.c_str();
 
 	//create the socket and set to send to 127.0.0.1:11999
 	udpConnection.Create();
 	//127.0.0.1 for loop back
 	//192.168.1.255 to "splat on a given subnet, end it with 255 (a general splat address 255.255.255.255 has problems with some firewall settings
 	udpConnection.Bind(11999);
-	udpConnection.Connect("127.0.0.1",11999);
+	udpConnection.Connect(charSplat, 11999);
 	udpConnection.SetNonBlocking(true);
-
-	myIP = getLocalIPs();
 
 	ipAddress = "";
 	firstConnection = false;
@@ -78,7 +80,7 @@ void ofApp::update() {
 	if (success == true)
 	{
 		ipAddress = ofToString(remIP[0]);
-		std::cout << "Ip Address: " << ipAddress << "\n";
+		//std::cout << "Ip Address: " << ipAddress << "\n";
 		firstConnection = true;
 	}
 	else
@@ -156,8 +158,9 @@ void ofApp::draw() {
 	ofDrawBitmapString("Remote CV", 10, 20);
 	ofDrawBitmapString("Your local IP address: " + myIP[0], 10, 40);
 	ofDrawBitmapString("Your partner's IP address: " + ipAddress, 10, 60); //retrieving the remote IP hasn't been written yet
-	ofDrawBitmapString("Your color is: " + ofToString(urColor), 10, 80);
-	ofDrawBitmapString("drag to draw", 10, 100);
+	ofDrawBitmapString("Your subnet splat address: " + subnetSplat, 10, 80);
+	ofDrawBitmapString("Your color is: " + ofToString(urColor), 10, 100);
+	ofDrawBitmapString("drag to draw", 10, 120);
 
 
 	//----openCV stuff ---------------------------------------------------
@@ -335,4 +338,54 @@ vector<string> ofApp::getLocalIPs()
 #endif
 
 	return result;
+}
+
+//get the subnet's splat address
+void ofApp::getSplat(string locIP) {
+	
+#ifdef TARGET_WIN32
+
+	string commandResult = ofSystem("arp -a");
+	//ofLogVerbose() << commandResult;
+
+	//print arp -a results
+	//std::cout << commandResult << "\n";
+
+	//create a vector containing each line of the results
+	vector<string> splitSorted = ofSplitString(commandResult, "\n");
+
+	//split your local IP into subnets sections
+	vector<string> locVector;
+	locVector = ofSplitString(locIP, ".");
+
+	// the first line is actually a blank line and the next 2 lines dont contain what we need so we'll start at 3
+	for (int i = 3; i < splitSorted.size(); i++) {
+		//remove the two spaces in the beginning of the line
+		splitSorted[i] = splitSorted[i].erase(0, 2);
+
+		//remove the non IP elements from each line		
+		int space = splitSorted[i].find_first_of(" ");
+		splitSorted[i] = splitSorted[i].substr(0, space);
+
+		//print just IPs
+		//std:cout << splitSorted[i] << "\n";
+
+		vector<string> subNet;
+		subNet = ofSplitString(splitSorted[i], ".");
+
+		if (subNet[0] == locVector[0] && subNet[1] == locVector[1] && subNet[3] == "255") {
+			subnetSplat = splitSorted[i];
+			//print the subnet splat ip
+			//std::cout << subnetSplat << "\n";
+			break;
+		}
+	}
+
+	/*
+#else
+	
+	//code for non-windows systems goes here
+
+	*/
+#endif
 }

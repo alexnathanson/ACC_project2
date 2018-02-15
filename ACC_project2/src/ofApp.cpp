@@ -108,7 +108,7 @@ void ofApp::update() {
 		}
 
 		sendPoints(scaleData);
-		testPoints(posData);
+		//testPoints(posData);
 	}
 
 }
@@ -348,7 +348,7 @@ void ofApp::storeMessage() {
 
 		//would be rad to generate a unique color (hash method? from their IP?
 		if (inMessage.substr(0, idLen) != myIP[0]) {
-			ipColor.set(0, 255, 0);
+			ipColor.set(0, 255, 255);
 		}
 		else {
 			ipColor.set(255, 0, 0);

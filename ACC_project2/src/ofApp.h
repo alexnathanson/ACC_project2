@@ -56,7 +56,9 @@ public:
 	ofTrueTypeFont  monosm;
 	vector<ofPoint> stroke;
 
-	vector<ofPoint> remoteStroke;
+	vector<ofPoint> remotePos;
+
+	ofColor ipColor;
 
 	vector<string> myIP;
 	vector<string> remIP;
@@ -68,16 +70,30 @@ public:
 
 	ofColor urColor;
 
-	float xScaler;
-	float yScaler;
-
-	string ipAddress;
+	string incomingIP; //changed from ipAddress to be more descriptive
 	bool firstConnection;
 
 	//determines the splat address for a given subnet
 	// only tested on mac - syntax might need to be adapted for other OS
 	void getSplat(string locIP);
 	string subnetSplat;
+
+	int idLen;
+
+	void confirmContact();
+
+	string inMessage;
+	string outMessage;
+
+	bool success;
+
+	void storeMessage();
+
+	void sendPoints(vector<ofPoint> points);
+	void testPoints(vector<ofPoint> points);
+
+	//bool UDPdraw;
+	//vector<ofPoint> UDPdump;
 
 };
 

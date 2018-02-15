@@ -37,11 +37,15 @@ void ofApp::setup() {
 
 	const char *charSplat = subnetSplat.c_str();
 
+
+	//make this a global variable
+	ipPort = 11999;
+
 	//create the socket and set to send to 127.0.0.1:11999
 	udpConnection.Create();
 	//127.0.0.1 for loop back
-	udpConnection.Bind(11999);
-	udpConnection.Connect(charSplat, 11999);
+	udpConnection.Bind(ipPort);
+	udpConnection.Connect(charSplat, ipPort);
 	udpConnection.SetNonBlocking(true);
 
 	incomingIP = "";
@@ -52,12 +56,10 @@ void ofApp::setup() {
 void ofApp::update() {
 	ofBackground(200,200,200);
 
+
 	//-------UDP stuff----------------------------
 	char udpMessage[100000];
 	udpConnection.Receive(udpMessage, 100000);
-
-	//make this a global variable
-	int ipPort = 11999;
 
 	//remIP is a vector so we could expand this for more than 2 networked users
 	remIP.clear();
@@ -65,10 +67,11 @@ void ofApp::update() {
 	success = udpConnection.GetRemoteAddr(remIP[0], ipPort);
 
 	inMessage = udpMessage;
+	//std::cout << myIP[0] << " " << inMessage.substr(0, idLen) << "\n";
 
-	confirmContact();
+	confirmContact(inMessage);
 
-	storeMessage();
+	storeMessage(inMessage);
 
 	//---- openCV stuff ------------------------------------------------------
 	bool bNewFrame = false;
@@ -110,7 +113,6 @@ void ofApp::update() {
 		sendPoints(scaleData);
 		//testPoints(posData);
 	}
-
 }
 
 //--------------------------------------------------------------
@@ -141,14 +143,15 @@ void ofApp::draw() {
 	
 
 	//--------UDP Stuff------------------------------------
-	//draw remote data
 	ofPushStyle();
-	//color of remote image
-	ofSetColor(ipColor);
-	
-	for (int i = 0; i<remotePos.size(); i++) {
-		ofDrawEllipse(remotePos[i], 20, 20);
-	}
+
+	//changed from localData to scaleData, because the UDP wasn't looping back properly
+	ofSetColor(ofColor::chartreuse);
+	drawPoints(scaleData);
+
+	ofSetColor(ofColor::tomato);
+	drawPoints(remotePos);
+
 	ofPopStyle();
 	
 }
@@ -322,9 +325,9 @@ void ofApp::getSplat(string locIP) {
 #endif
 }
 
-void ofApp::confirmContact() {
+void ofApp::confirmContact(string inMess) {
 	//check if the message exits and confirm it's not coming from your IP
-	if (success == true && inMessage.substr(0, idLen) != myIP[0])
+	if (success == true && inMess.substr(0, idLen) != myIP[0])
 	{
 		incomingIP = ofToString(remIP[0]);
 		//std::cout << "Ip Address: " << incomingIP << "\n";
@@ -339,35 +342,50 @@ void ofApp::confirmContact() {
 	}
 }
 
-void ofApp::storeMessage() {
+void ofApp::storeMessage(string inMess) {
 	//store incoming messages
 	//check that the mesage isn't empty and it's not coming from your IP
 	//if (inMessage != "" && inMessage.substr(0, idLen) != myIP[0]) {
 
-	if (inMessage != "") {
+	if (inMess != "") {
 
 		//would be rad to generate a unique color (hash method? from their IP?
-		if (inMessage.substr(0, idLen) != myIP[0]) {
-			ipColor.set(0, 255, 255);
-		}
-		else {
-			ipColor.set(255, 0, 0);
-		}
-		//strip the IP off
-		inMessage = inMessage.erase(0, idLen);
+		
+		if (inMess.substr(0, idLen) == myIP[0]) {
 
-		remotePos.clear();
+			//strip the IP off
+			//inMess = inMess.erase(0, idLen);
+			std::cout << "test" << "\n";
+			localPos.clear();
 
-		float x, y;
-		vector<string> strPoints = ofSplitString(inMessage, "[/p]");
-		for (unsigned int i = 0; i < strPoints.size(); i++) {
-			vector<string> point = ofSplitString(strPoints[i], "|");
-			if (point.size() == 2) {
-				x = atof(point[0].c_str());
-				y = atof(point[1].c_str());
-				remotePos.push_back(ofPoint(x, y));
+			float x, y;
+			vector<string> strPoints = ofSplitString(inMess, "[/p]");
+			for (unsigned int i = 0; i < strPoints.size(); i++) {
+				vector<string> point = ofSplitString(strPoints[i], "|");
+				if (point.size() == 2) {
+					x = atof(point[0].c_str());
+					y = atof(point[1].c_str());
+					localPos.push_back(ofPoint(x, y));
+				}
+			}
+		} else {
+			//strip the IP off - not necessary becasue the if statement disregards splits larger than 2
+			//inMess = inMess.erase(0, idLen);
+
+			remotePos.clear();
+
+			float x, y;
+			vector<string> strPoints = ofSplitString(inMess, "[/p]");
+			for (unsigned int i = 0; i < strPoints.size(); i++) {
+				vector<string> point = ofSplitString(strPoints[i], "|");
+				if (point.size() == 2) {
+					x = atof(point[0].c_str());
+					y = atof(point[1].c_str());
+					remotePos.push_back(ofPoint(x, y));
+				}
 			}
 		}
+		
 	}
 }
 
@@ -394,7 +412,13 @@ void ofApp::testPoints(vector<ofPoint> points) {
 	}
 
 	//put your IP address in as a filter header
-	string testIP = "255.255.255.255";
+	string testIP = "255.255.5.255";
 	outMessage = testIP + outMessage;
 	udpConnection.Send(outMessage.c_str(), outMessage.length());
+}
+
+void ofApp::drawPoints(vector<ofPoint> points) {
+	for (int i = 0; i<points.size(); i++) {
+		ofDrawEllipse(points[i], 20, 20);
+	}
 }

@@ -57,11 +57,14 @@ public:
 	vector<ofPoint> stroke;
 
 	vector<ofPoint> remotePos;
+	vector<ofPoint> localPos;
 
 	ofColor ipColor;
 
 	vector<string> myIP;
 	vector<string> remIP;
+
+	int ipPort;
 
 	//a function for retrieving your local IP, written by davidemania
 	// this uses the command line rather than GetListenAddr
@@ -80,20 +83,22 @@ public:
 
 	int idLen;
 
-	void confirmContact();
+	void confirmContact(string inMess);
 
 	string inMessage;
 	string outMessage;
 
 	bool success;
 
-	void storeMessage();
+	void storeMessage(string inMess);
 
 	void sendPoints(vector<ofPoint> points);
 	void testPoints(vector<ofPoint> points);
 
 	//bool UDPdraw;
 	//vector<ofPoint> UDPdump;
+
+	void drawPoints(vector<ofPoint> points);
 
 };
 

@@ -34,7 +34,6 @@ public:
 #endif
 
 	ofxCvColorImage			colorImg;
-
 	ofxCvGrayscaleImage 	grayImage;
 	ofxCvGrayscaleImage 	grayBg;
 	ofxCvGrayscaleImage 	grayDiff;

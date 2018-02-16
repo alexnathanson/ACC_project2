@@ -23,8 +23,7 @@ void ofApp::setup() {
 	grayBg.allocate(320, 240);
 	grayDiff.allocate(320, 240);
 
-	bLearnBakground = true;
-	threshold = 10;
+	threshold = 20;
 
 	//makes it so it doesn't clear the background automatically
 	ofSetBackgroundAuto(false);
@@ -45,7 +44,9 @@ void ofApp::setup() {
 	udpConnection.Create();
 	//127.0.0.1 for loop back
 	udpConnection.Bind(ipPort);
-	udpConnection.Connect(charSplat, ipPort);
+	//if the subnet splat method isn't working as intended manually enter your partner's IP
+	//udpConnection.Connect(charSplat, ipPort);
+	udpConnection.Connect("172.16.14.164", ipPort);
 	udpConnection.SetNonBlocking(true);
 
 	incomingIP = "";
@@ -74,40 +75,43 @@ void ofApp::update() {
 	storeMessage(inMessage);
 
 	//---- openCV stuff ------------------------------------------------------
-	bool bNewFrame = false;
+	//bool bNewFrame = false;
 
 	vidGrabber.update();
 
-	bNewFrame = vidGrabber.isFrameNew();
-
-	if (bNewFrame) {
+	if (vidGrabber.isFrameNew()) {
 
 		colorImg.setFromPixels(vidGrabber.getPixels());
-
 		grayImage = colorImg;
-		if (bLearnBakground == true) {
-			grayBg = grayImage;		// the = sign copys the pixels from grayImage into grayBg (operator overloading)
-			bLearnBakground = false;
-		}
+
+		//if (bLearnBakground == true) {
+		//	grayBg = grayImage;		// the = sign copys the pixels from grayImage into grayBg (operator overloading)
+		//	bLearnBakground = false;
+		//}
 
 		// take the abs value of the difference between background and incoming and then threshold:
 		grayDiff.absDiff(grayBg, grayImage);
+		grayBg = grayImage;
 		grayDiff.threshold(threshold);
 
 		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
 		// also, find holes is set to true so we will get interior contours as well....
-		contourFinder.findContours(grayDiff, 20, (340 * 240) / 3, 10, true);	// find holes
+		contourFinder.findContours(grayDiff, 500, (340 * 240) / 3, 1, true);	// find holes
 
 		//this vector needs to be reset everytime
 		posData.clear();
 		scaleData.clear();
-
-
-		for (int i = 0; i < contourFinder.nBlobs; i++) {
-			posData.push_back(contourFinder.blobs[i].boundingRect.getCenter());
-			scaleData.push_back(posData[i]);
-			scaleData[i][0] = ofMap(scaleData[i][0], 0.0, 320.0, 0.0, 1024.0, true);
-			scaleData[i][1] = ofMap(scaleData[i][1], 0.0, 240.0, 0.0, 768.0, true);
+		
+		if (contourFinder.nBlobs != 0) { //crucial - will get a vector out of range without it
+		//	for (int i = 0; i < contourFinder.nBlobs; i++) { //add this in to create a vector containing points from all blobs
+				for (int t = 0; t < contourFinder.blobs[0].nPts; t++) {
+					posData.push_back(contourFinder.blobs[0].pts[t]);
+					//posData.push_back(contourFinder.blobs[i].boundingRect.getCenter());
+					scaleData.push_back(posData[t]);
+					scaleData[t][0] = ofMap(scaleData[t][0], 0.0, 320.0, 0.0, 1024.0, true);
+					scaleData[t][1] = ofMap(scaleData[t][1], 0.0, 240.0, 0.0, 768.0, true);
+				}
+		//	}
 		}
 
 		sendPoints(scaleData);
@@ -117,6 +121,18 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
+
+	// draw the original local video image
+	ofSetHexColor(0xffffff);
+	ofPushMatrix();
+	//ofTranslate(ofGetWidth() / 2 - colorImg.getWidth() / 2, ofGetHeight() / 2 - colorImg.getHeight() / 2);
+	if (bShowVideo) {
+		colorImg.resize(ofGetWidth(), ofGetHeight());
+		colorImg.draw(0, 0);
+		grayDiff.draw(0, ofGetHeight() - grayDiff.getWidth());
+	}
+	ofPopMatrix();
+
 	// ------text--------------
 	ofFill();
 	ofSetColor(ofColor::fuchsia);
@@ -131,15 +147,6 @@ void ofApp::draw() {
 
 	ofSetColor(ofColor::fuchsia);
 	ofDrawBitmapString("Press 'v' to toggle video and path drawing", ofGetWidth() / 2.0, ofGetHeight() - 100.0);
-
-	// draw the original local video image
-	ofSetHexColor(0xffffff);
-	ofPushMatrix();
-	ofTranslate(ofGetWidth() / 2 - colorImg.getWidth() / 2, ofGetHeight() / 2 - colorImg.getHeight() / 2);
-	if (bShowVideo) {
-		colorImg.draw(0, 0);
-	}
-	ofPopMatrix();
 	
 
 	//--------UDP Stuff------------------------------------
@@ -355,7 +362,7 @@ void ofApp::storeMessage(string inMess) {
 
 			//strip the IP off
 			//inMess = inMess.erase(0, idLen);
-			std::cout << "test" << "\n";
+			//std::cout << "test" << "\n";
 			localPos.clear();
 
 			float x, y;
@@ -419,6 +426,6 @@ void ofApp::testPoints(vector<ofPoint> points) {
 
 void ofApp::drawPoints(vector<ofPoint> points) {
 	for (int i = 0; i<points.size(); i++) {
-		ofDrawEllipse(points[i], 20, 20);
+		ofDrawEllipse(points[i], 5, 5);
 	}
 }

@@ -48,6 +48,8 @@ public:
 	vector<ofPoint> posData;
 	vector<ofPoint> scaleData;
 
+	vector<vector<ofPoint> > allBlobs;
+
 	//UDP stuff
 	ofxUDPManager udpConnection;
 
@@ -92,13 +94,13 @@ public:
 
 	void storeMessage(string inMess);
 
-	void sendPoints(vector<ofPoint> points);
+	void sendPoints(vector<vector <ofPoint> > points);
 	void testPoints(vector<ofPoint> points);
 
 	//bool UDPdraw;
 	//vector<ofPoint> UDPdump;
 
-	void drawPoints(vector<ofPoint> points);
+	void drawPoints(vector<vector <ofPoint> > points);
 
 };
 

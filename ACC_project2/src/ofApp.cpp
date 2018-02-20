@@ -102,25 +102,28 @@ void ofApp::update() {
 
 		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
 		// also, find holes is set to true so we will get interior contours as well....
-		contourFinder.findContours(grayDiff, 500, (340 * 240) / 3, 1, true);	// find holes
+		contourFinder.findContours(grayDiff, 500, (340 * 240) / 3, 4, true);	// find holes
 
 		//this vector needs to be reset everytime
-		posData.clear();
-		scaleData.clear();
-		
+		allBlobs.clear();
+
 		if (contourFinder.nBlobs != 0) { //crucial - will get a vector out of range without it
-		//	for (int i = 0; i < contourFinder.nBlobs; i++) { //add this in to create a vector containing points from all blobs
-				for (int t = 0; t < contourFinder.blobs[0].nPts; t++) {
-					posData.push_back(contourFinder.blobs[0].pts[t]);
-					//posData.push_back(contourFinder.blobs[i].boundingRect.getCenter());
-					scaleData.push_back(posData[t]);
+			std::cout << "Original amount of blobs: " << contourFinder.nBlobs << "\n";
+			for (int i = 0; i < contourFinder.nBlobs; i++) { //add this in to create a vector containing points from all blobs
+				scaleData.clear();
+				posData.clear();
+				for (int t = 0; t < contourFinder.blobs[i].nPts; t++) {
+					//posData.push_back(contourFinder.blobs[i].pts[t]);
+					scaleData.push_back(contourFinder.blobs[i].pts[t]);
 					scaleData[t][0] = ofMap(scaleData[t][0], 0.0, 320.0, 0.0, 1024.0, true);
 					scaleData[t][1] = ofMap(scaleData[t][1], 0.0, 240.0, 0.0, 768.0, true);
 				}
-		//	}
+				allBlobs.push_back(scaleData);
+			}
 		}
 
-		sendPoints(scaleData);
+
+		sendPoints(allBlobs);
 		//testPoints(posData);
 	}
 }
@@ -162,10 +165,10 @@ void ofApp::draw() {
 
 	//changed from localData to scaleData, because the UDP wasn't looping back properly
 	ofSetColor(urColor);
-	drawPoints(scaleData);
+	drawPoints(allBlobs);
 
 	ofSetColor(remColor);
-	drawPoints(remotePos);
+	//drawPoints(remotePos);
 
 	ofPopStyle();
 	
@@ -390,7 +393,10 @@ void ofApp::storeMessage(string inMess) {
 			remotePos.clear();
 
 			float x, y;
+			//vector<string> strPoints = ofSplitString(inMess, "[$]");
+			
 			vector<string> strPoints = ofSplitString(inMess, "[/p]");
+			
 			for (unsigned int i = 0; i < strPoints.size(); i++) {
 				vector<string> point = ofSplitString(strPoints[i], "|");
 				if (point.size() == 2) {
@@ -404,12 +410,16 @@ void ofApp::storeMessage(string inMess) {
 	}
 }
 
-void ofApp::sendPoints(vector<ofPoint> points) {
+void ofApp::sendPoints(vector<vector <ofPoint>> points) {
 	
 	outMessage = "";
 
 	for (int i = 0; i < points.size(); i++) {
-	outMessage += ofToString(points[i].x) + "|" + ofToString(points[i].y) + "[/p]"; // package this to send better
+		std::cout<<"Sending blobs: "<< points.size() << "\n";
+		for (int b = 0; b < points[i].size(); b++) {
+			outMessage += ofToString(points[i][b].x) + "|" + ofToString(points[i][b].y) + "[/p]"; // package this to send better
+		}
+		//outMessage += "[$]"; //delineates end of a blob
 	}
 
 	//put your IP address in as a filter header
@@ -432,8 +442,11 @@ void ofApp::testPoints(vector<ofPoint> points) {
 	udpConnection.Send(outMessage.c_str(), outMessage.length());
 }
 
-void ofApp::drawPoints(vector<ofPoint> points) {
+void ofApp::drawPoints(vector<vector <ofPoint> > points) {
 	for (int i = 0; i<points.size(); i++) {
-		ofDrawEllipse(points[i], 5, 5);
+		std::cout << "Draw these blobs: " + points.size() << "\n";
+		for (int b = 0; b < points[i].size(); b++) {
+			ofDrawEllipse(points[i][b], 5, 5);
+		}
 	}
 }

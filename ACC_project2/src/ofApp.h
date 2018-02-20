@@ -71,6 +71,7 @@ public:
 	vector<string> ofApp::getLocalIPs();
 
 	ofColor urColor;
+	ofColor remColor;
 
 	string incomingIP; //changed from ipAddress to be more descriptive
 	bool firstConnection;

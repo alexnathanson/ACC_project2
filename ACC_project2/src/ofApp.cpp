@@ -9,8 +9,14 @@
 void ofApp::setup() {
 	ofSetFrameRate(60);
 
-	urColor = 0, 255, 0;
+	urColor.r = 0;
+	urColor.g = 255;
+	urColor.b = 0;
 
+	remColor.r = 255;
+	remColor.g = 0;
+	remColor.b = 0;
+	
 	vidGrabber.setVerbose(true);
 	vidGrabber.setDeviceID(0);
 	//were running open CV on this smaller image, but scaling up the data
@@ -134,29 +140,31 @@ void ofApp::draw() {
 	ofPopMatrix();
 
 	// ------text--------------
+	ofPushStyle();
 	ofFill();
 	ofSetColor(ofColor::fuchsia);
-	ofDrawRectangle(0, 0, 200, 30);
+	ofDrawRectangle(0, 0, 375, 100);
+	ofSetColor(urColor);
+	ofDrawRectangle(0, 85, 375, 20);
 	ofSetHexColor(0x101010);
 	ofDrawBitmapString("Remote CV", 10, 20);
 	ofDrawBitmapString("Your local IP address: " + myIP[0], 10, 40);
 	ofDrawBitmapString("Your partner's IP address: " + incomingIP, 10, 60);
 	ofDrawBitmapString("Your subnet splat address: " + subnetSplat, 10, 80);
 	ofDrawBitmapString("Your color is: " + ofToString(urColor), 10, 100);
-	//ofDrawBitmapString("drag to draw", 10, 120);
 
 	ofSetColor(ofColor::fuchsia);
 	ofDrawBitmapString("Press 'v' to toggle video and path drawing", ofGetWidth() / 2.0, ofGetHeight() - 100.0);
-	
+	ofPopStyle();
 
 	//--------UDP Stuff------------------------------------
 	ofPushStyle();
 
 	//changed from localData to scaleData, because the UDP wasn't looping back properly
-	ofSetColor(ofColor::chartreuse);
+	ofSetColor(urColor);
 	drawPoints(scaleData);
 
-	ofSetColor(ofColor::tomato);
+	ofSetColor(remColor);
 	drawPoints(remotePos);
 
 	ofPopStyle();

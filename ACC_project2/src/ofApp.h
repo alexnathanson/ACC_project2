@@ -128,5 +128,7 @@ public:
 
 	void drawPoints(vector<vector <ofPoint> > points);
 
+	void drawBodyContour(vector<vector <ofPoint> > points, ofColor c);
+
 };
 

@@ -560,18 +560,17 @@ void ofApp::drawBodyContour(vector<vector <ofPoint> > points, ofColor c) {
 		ofScale(0.5, 0.5);
 
 		for (auto & line : polylines) {
+			ofNoFill();
+			ofSetColor(c);
 			line.draw();
-			//ofNoFill();
-			//ofSetColor(c);
-			//line.draw();
 
-			//// draw filled polyline
+			// draw filled polyline
 
-			//ofBeginShape();
-			//for (int i = 0; i < line.getVertices().size(); i++) {
-			//	ofVertex(line.getVertices().at(i).x, line.getVertices().at(i).y);
-			//}
-			//ofEndShape();
+			ofBeginShape();
+			for (int i = 0; i < line.getVertices().size(); i++) {
+				ofVertex(line.getVertices().at(i).x, line.getVertices().at(i).y);
+			}
+			ofEndShape();
 		}
 
 		ofPopMatrix();

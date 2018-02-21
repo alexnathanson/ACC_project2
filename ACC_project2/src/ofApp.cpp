@@ -168,7 +168,7 @@ void ofApp::draw() {
 	drawPoints(allBlobs);
 
 	ofSetColor(remColor);
-	//drawPoints(remotePos);
+	drawPoints(allRem);
 
 	ofPopStyle();
 	
@@ -393,16 +393,24 @@ void ofApp::storeMessage(string inMess) {
 			remotePos.clear();
 
 			float x, y;
-			//vector<string> strPoints = ofSplitString(inMess, "[$]");
+
+			blobVect.clear();
+
+			blobVect = ofSplitString(inMess, "[$]");
 			
-			vector<string> strPoints = ofSplitString(inMess, "[/p]");
-			
-			for (unsigned int i = 0; i < strPoints.size(); i++) {
-				vector<string> point = ofSplitString(strPoints[i], "|");
-				if (point.size() == 2) {
-					x = atof(point[0].c_str());
-					y = atof(point[1].c_str());
-					remotePos.push_back(ofPoint(x, y));
+			allRem.clear();
+			strPoints.clear();
+
+			for (int v = 0; v < blobVect.size(); v++) {
+				strPoints = ofSplitString(blobVect[v], "[/p]");
+				for (unsigned int i = 0; i < strPoints[v].size(); i++) {
+					vector<string> point = ofSplitString(strPoints[v], "|");
+					if (point.size() == 2) {
+						x = atof(point[0].c_str());
+						y = atof(point[1].c_str());
+						remotePos.push_back(ofPoint(x, y));
+					}
+					allRem.push_back(remotePos);
 				}
 			}
 		}
@@ -419,7 +427,7 @@ void ofApp::sendPoints(vector<vector <ofPoint>> points) {
 		for (int b = 0; b < points[i].size(); b++) {
 			outMessage += ofToString(points[i][b].x) + "|" + ofToString(points[i][b].y) + "[/p]"; // package this to send better
 		}
-		//outMessage += "[$]"; //delineates end of a blob
+		outMessage += "[$]"; //delineates end of a blob
 	}
 
 	//put your IP address in as a filter header

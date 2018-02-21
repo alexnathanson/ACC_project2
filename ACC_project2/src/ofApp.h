@@ -50,6 +50,11 @@ public:
 
 	vector<vector<ofPoint> > allBlobs;
 
+	//recieving stuff
+	vector <string> strPoints;
+	vector<string> blobVect;
+
+
 	//UDP stuff
 	ofxUDPManager udpConnection;
 
@@ -58,6 +63,8 @@ public:
 	vector<ofPoint> stroke;
 
 	vector<ofPoint> remotePos;
+	vector<vector <ofPoint> > allRem;
+
 	vector<ofPoint> localPos;
 
 	ofColor ipColor;

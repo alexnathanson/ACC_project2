@@ -38,7 +38,6 @@ public:
 	ofxCvGrayscaleImage 	grayImage;
 	ofxCvGrayscaleImage 	grayBg;
 	ofxCvGrayscaleImage 	grayDiff;
-	ofxCvGrayscaleImage		tempBk;
 
 	ofxCvContourFinder 	contourFinder;
 
@@ -126,10 +125,6 @@ public:
 	void storeMessage(string inMess);
 
 	void sendPoints(vector<vector <ofPoint> > points);
-	void testPoints(vector<ofPoint> points);
-
-	//bool UDPdraw;
-	//vector<ofPoint> UDPdump;
 
 	void drawPoints(vector<vector <ofPoint> > points);
 

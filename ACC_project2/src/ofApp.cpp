@@ -30,7 +30,6 @@ void ofApp::setup() {
 	grayImage.allocate(320, 240);
 	grayBg.allocate(320, 240);
 	grayDiff.allocate(320, 240);
-	tempBk.allocate(320, 240);
 
 	threshold = 20;
 
@@ -45,7 +44,6 @@ void ofApp::setup() {
 
 	const char *charSplat = subnetSplat.c_str();
 
-
 	//make this a global variable
 	ipPort = 11999;
 
@@ -54,8 +52,8 @@ void ofApp::setup() {
 	//127.0.0.1 for loop back
 	udpConnection.Bind(ipPort);
 	//if the subnet splat method isn't working as intended manually enter your partner's IP
-	//udpConnection.Connect(charSplat, ipPort);
-	udpConnection.Connect("192.168.1.161", ipPort);
+	udpConnection.Connect(charSplat, ipPort);
+	//udpConnection.Connect("192.168.1.161", ipPort);
 	udpConnection.SetNonBlocking(true);
 
 	incomingIP = "";
@@ -98,7 +96,6 @@ void ofApp::update() {
 	success = udpConnection.GetRemoteAddr(remIP[0], ipPort);
 
 	inMessage = udpMessage;
-	//std::cout << myIP[0] << " " << inMessage.substr(0, idLen) << "\n";
 
 	confirmContact(inMessage);
 
@@ -142,9 +139,6 @@ void ofApp::update() {
 			bLearnBakground = false;
 		}
 		
-		//grayDiff.absDiff(grayImage, tempBk);
-		//tempBk = grayImage;
-
 		grayDiff.absDiff(grayBg, grayImage);
 		grayDiff.blur(blur);
 		grayDiff.blurGaussian(gaussianBlur);
@@ -156,13 +150,12 @@ void ofApp::update() {
 			grayDiff.erode();
 		}
 
-		contourFinder.findContours(grayDiff, minContour, (320 * 240) / 3, 1, false);
+		contourFinder.findContours(grayDiff, minContour, (320 * 240) / 3, 4, false);
 
 		//this vector needs to be reset everytime
 		allBlobs.clear();
 
 		if (contourFinder.nBlobs != 0) { //crucial - will get a vector out of range without it
-			//std::cout << "Original amount of blobs: " << contourFinder.nBlobs << "\n";
 			for (int i = 0; i < contourFinder.nBlobs; i++) { //add this in to create a vector containing points from all blobs
 				scaleData.clear();
 				posData.clear();
@@ -177,50 +170,7 @@ void ofApp::update() {
 		}
 
 	}
-
-	//vidGrabber.update();
-
-	//if (vidGrabber.isFrameNew()) {
-
-	//	colorImg.setFromPixels(vidGrabber.getPixels());
-	//	grayImage = colorImg;
-
-	//	//if (bLearnBakground == true) {
-	//	//	grayBg = grayImage;		// the = sign copys the pixels from grayImage into grayBg (operator overloading)
-	//	//	bLearnBakground = false;
-	//	//}
-
-	//	// take the abs value of the difference between background and incoming and then threshold:
-	//	grayDiff.absDiff(grayBg, grayImage);
-	//	grayBg = grayImage;
-	//	grayDiff.threshold(threshold);
-
-	//	// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
-	//	// also, find holes is set to true so we will get interior contours as well....
-	//	contourFinder.findContours(grayDiff, 500, (340 * 240) / 3, 4, true);	// find holes
-
-	//	//this vector needs to be reset everytime
-	//	allBlobs.clear();
-
-	//	if (contourFinder.nBlobs != 0) { //crucial - will get a vector out of range without it
-	//		std::cout << "Original amount of blobs: " << contourFinder.nBlobs << "\n";
-	//		for (int i = 0; i < contourFinder.nBlobs; i++) { //add this in to create a vector containing points from all blobs
-	//			scaleData.clear();
-	//			posData.clear();
-	//			for (int t = 0; t < contourFinder.blobs[i].nPts; t++) {
-	//				//posData.push_back(contourFinder.blobs[i].pts[t]);
-	//				scaleData.push_back(contourFinder.blobs[i].pts[t]);
-	//				scaleData[t][0] = ofMap(scaleData[t][0], 0.0, 320.0, 0.0, 1024.0, true);
-	//				scaleData[t][1] = ofMap(scaleData[t][1], 0.0, 240.0, 0.0, 768.0, true);
-	//			}
-	//			allBlobs.push_back(scaleData);
-	//		}
-	//	}
-
-
 		sendPoints(allBlobs);
-	//	//testPoints(posData);
-	//}
 }
 
 //--------------------------------------------------------------
@@ -230,7 +180,7 @@ void ofApp::draw() {
 	// draw the original local video image
 	ofSetHexColor(0xffffff);
 	ofPushMatrix();
-	//ofTranslate(ofGetWidth() / 2 - colorImg.getWidth() / 2, ofGetHeight() / 2 - colorImg.getHeight() / 2);
+
 	if (bShowVideo) {
 		colorImg.resize(ofGetWidth(), ofGetHeight());
 		colorImg.draw(0, 0);
@@ -263,12 +213,8 @@ void ofApp::draw() {
 	ofSetColor(urColor);
 	drawPoints(allBlobs);
 
-	//if(ofGetElapsedTimeMillis() % 1000 == 0){
-		ofSetColor(remColor);
-		drawPoints(allRem);
-	//}
-
-	
+	ofSetColor(remColor);
+	drawPoints(allRem);
 
 	ofPopStyle();
 	
@@ -514,17 +460,16 @@ void ofApp::storeMessage(string inMess) {
 			remotePos.clear();
 
 			float x, y;
-
-			
-			blobVect.clear();
-
-			blobVect = ofSplitString(inMess, "[$]");
 			
 			allRem.clear();
 			strPoints.clear();
 			remotePos.clear();
 
-			/*if (blobVect.size() != 0) {
+			//Use this code if delineating by blob
+			/*blobVect.clear();
+			blobVect = ofSplitString(inMess, "[$]");
+
+			if (blobVect.size() != 0) {
 				for (int v = 0; v < blobVect.size(); v++) {
 					strPoints = ofSplitString(blobVect[v], "[/p]");
 					for (unsigned int i = 0; i < strPoints.size(); i++) {
@@ -534,12 +479,12 @@ void ofApp::storeMessage(string inMess) {
 							y = atof(point[1].c_str());
 							remotePos.push_back(ofPoint(x, y));
 						}
-						
-						allRem.push_back(remotePos);
 					}
+					allRem.push_back(remotePos);
 				}
 			}*/
-			
+		
+			//use this code if not delineating by blob
 			strPoints = ofSplitString(inMess, "[/p]");
 			for (unsigned int i = 0; i < strPoints.size(); i++) {
 				vector<string> point = ofSplitString(strPoints[i], "|");
@@ -550,7 +495,6 @@ void ofApp::storeMessage(string inMess) {
 				}
 			}
 			allRem.push_back(remotePos);
-
 		}
 		
 	}
@@ -565,26 +509,13 @@ void ofApp::sendPoints(vector<vector <ofPoint>> points) {
 		for (int b = 0; b < points[i].size(); b++) {
 			outMessage += ofToString(points[i][b].x) + "|" + ofToString(points[i][b].y) + "[/p]"; // package this to send better
 		}
-		//outMessage += "[$]"; //delineates end of a blob
+
+		//delineates end of a blob - only neccessary if you need to seperate specific blobs when you draw
+		//outMessage += "[$]"; 
 	}
 
 	//put your IP address in as a filter header
 	outMessage = myIP[0] + outMessage;
-	udpConnection.Send(outMessage.c_str(), outMessage.length());
-}
-
-
-void ofApp::testPoints(vector<ofPoint> points) {
-
-	outMessage = "";
-
-	for (int i = 0; i < points.size(); i++) {
-		outMessage += ofToString(points[i].x) + "|" + ofToString(points[i].y) + "[/p]"; // package this to send better
-	}
-
-	//put your IP address in as a filter header
-	string testIP = "255.255.5.255";
-	outMessage = testIP + outMessage;
 	udpConnection.Send(outMessage.c_str(), outMessage.length());
 }
 

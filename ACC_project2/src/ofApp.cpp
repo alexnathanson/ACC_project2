@@ -30,6 +30,7 @@ void ofApp::setup() {
 	grayImage.allocate(320, 240);
 	grayBg.allocate(320, 240);
 	grayDiff.allocate(320, 240);
+	tempBk.allocate(320, 240);
 
 	threshold = 20;
 
@@ -54,7 +55,7 @@ void ofApp::setup() {
 	udpConnection.Bind(ipPort);
 	//if the subnet splat method isn't working as intended manually enter your partner's IP
 	//udpConnection.Connect(charSplat, ipPort);
-	udpConnection.Connect("172.16.14.164", ipPort);
+	udpConnection.Connect("172.16.14.53", ipPort);
 	udpConnection.SetNonBlocking(true);
 
 	incomingIP = "";
@@ -140,6 +141,9 @@ void ofApp::update() {
 			grayBg = grayImage;
 			bLearnBakground = false;
 		}
+		
+		//grayDiff.absDiff(grayImage, tempBk);
+		//tempBk = grayImage;
 
 		grayDiff.absDiff(grayBg, grayImage);
 		grayDiff.blur(blur);
@@ -152,13 +156,13 @@ void ofApp::update() {
 			grayDiff.erode();
 		}
 
-		contourFinder.findContours(grayDiff, minContour, (320 * 240) / 3, 10, false);
+		contourFinder.findContours(grayDiff, minContour, (320 * 240) / 3, 1, false);
 
 		//this vector needs to be reset everytime
 		allBlobs.clear();
 
 		if (contourFinder.nBlobs != 0) { //crucial - will get a vector out of range without it
-			std::cout << "Original amount of blobs: " << contourFinder.nBlobs << "\n";
+			//std::cout << "Original amount of blobs: " << contourFinder.nBlobs << "\n";
 			for (int i = 0; i < contourFinder.nBlobs; i++) { //add this in to create a vector containing points from all blobs
 				scaleData.clear();
 				posData.clear();
@@ -172,7 +176,6 @@ void ofApp::update() {
 			}
 		}
 
-		sendPoints(allBlobs);
 	}
 
 	//vidGrabber.update();
@@ -215,7 +218,7 @@ void ofApp::update() {
 	//	}
 
 
-	//	sendPoints(allBlobs);
+		sendPoints(allBlobs);
 	//	//testPoints(posData);
 	//}
 }
@@ -260,8 +263,12 @@ void ofApp::draw() {
 	ofSetColor(urColor);
 	drawPoints(allBlobs);
 
-	ofSetColor(remColor);
-	drawPoints(allRem);
+	//if(ofGetElapsedTimeMillis() % 1000 == 0){
+		ofSetColor(remColor);
+		drawPoints(allRem);
+	//}
+
+	
 
 	ofPopStyle();
 	
@@ -502,33 +509,48 @@ void ofApp::storeMessage(string inMess) {
 			}*/
 		} else {
 			//strip the IP off - not necessary becasue the if statement disregards splits larger than 2
-			//inMess = inMess.erase(0, idLen);
+			inMess = inMess.erase(0, idLen);
 
 			remotePos.clear();
 
 			float x, y;
 
+			
 			blobVect.clear();
 
 			blobVect = ofSplitString(inMess, "[$]");
 			
 			allRem.clear();
 			strPoints.clear();
+			remotePos.clear();
 
-			if (blobVect.size() != 0) {
+			/*if (blobVect.size() != 0) {
 				for (int v = 0; v < blobVect.size(); v++) {
 					strPoints = ofSplitString(blobVect[v], "[/p]");
-					for (unsigned int i = 0; i < strPoints[v].size(); i++) {
-						vector<string> point = ofSplitString(strPoints[v], "|");
+					for (unsigned int i = 0; i < strPoints.size(); i++) {
+						vector<string> point = ofSplitString(strPoints[i], "|");
 						if (point.size() == 2) {
 							x = atof(point[0].c_str());
 							y = atof(point[1].c_str());
 							remotePos.push_back(ofPoint(x, y));
 						}
+						
 						allRem.push_back(remotePos);
 					}
 				}
+			}*/
+			
+			strPoints = ofSplitString(inMess, "[/p]");
+			for (unsigned int i = 0; i < strPoints.size(); i++) {
+				vector<string> point = ofSplitString(strPoints[i], "|");
+				if (point.size() == 2) {
+					x = atof(point[0].c_str());
+					y = atof(point[1].c_str());
+					remotePos.push_back(ofPoint(x, y));
+				}
+				allRem.push_back(remotePos);
 			}
+
 		}
 		
 	}
@@ -539,11 +561,11 @@ void ofApp::sendPoints(vector<vector <ofPoint>> points) {
 	outMessage = "";
 
 	for (int i = 0; i < points.size(); i++) {
-		std::cout<<"Sending blobs: "<< points.size() << "\n";
+		//std::cout<<"Sending blobs: "<< points.size() << "\n";
 		for (int b = 0; b < points[i].size(); b++) {
 			outMessage += ofToString(points[i][b].x) + "|" + ofToString(points[i][b].y) + "[/p]"; // package this to send better
 		}
-		outMessage += "[$]"; //delineates end of a blob
+		//outMessage += "[$]"; //delineates end of a blob
 	}
 
 	//put your IP address in as a filter header
@@ -568,7 +590,7 @@ void ofApp::testPoints(vector<ofPoint> points) {
 
 void ofApp::drawPoints(vector<vector <ofPoint> > points) {
 	for (int i = 0; i<points.size(); i++) {
-		std::cout << "Draw these blobs: " + points.size() << "\n";
+		//std::cout << "Draw these blobs: " + points.size() << "\n";
 		for (int b = 0; b < points[i].size(); b++) {
 			ofDrawEllipse(points[i][b], 5, 5);
 		}

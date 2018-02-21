@@ -4,9 +4,9 @@
 
 #include "ofxOpenCv.h"
 #include "ofxNetwork.h"
+#include "ofxGui.h"
 
-#define _USE_LIVE_VIDEO		// uncomment this to use a live camera
-// otherwise, we'll use a movie file
+#define _USE_LIVE_VIDEO
 
 class ofApp : public ofBaseApp {
 
@@ -34,6 +34,7 @@ public:
 #endif
 
 	ofxCvColorImage			colorImg;
+
 	ofxCvGrayscaleImage 	grayImage;
 	ofxCvGrayscaleImage 	grayBg;
 	ofxCvGrayscaleImage 	grayDiff;
@@ -43,6 +44,28 @@ public:
 	int 				threshold;
 	bool				bLearnBakground;
 	bool				bShowVideo = true;
+
+	// GUI / Contour Finding
+
+	void				setupGui();
+	void				gaussianBlurChanged(int & change);
+	void				blurChanged(int & change);
+	ofxLabel			screenSize;
+	ofxToggle			flipHorizontal;
+	ofxToggle			flipVertical;
+	ofxToggle			invert;
+	ofxIntSlider		gaussianBlur;
+	ofxIntSlider		blur;
+	ofxIntSlider		thresholdValue;
+	ofxIntSlider		dilateMultiple;
+	ofxIntSlider		erodeMultiple;
+	ofxIntSlider		polylineSmoothSize;
+	ofxIntSlider		minContour;
+	ofxFloatSlider		polylineSmoothShape;
+
+	ofxPanel gui;
+
+	bool bHide;
 
 	//variable to send data
 	vector<ofPoint> posData;

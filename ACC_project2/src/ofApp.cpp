@@ -9,6 +9,8 @@
 void ofApp::setup() {
 	ofSetFrameRate(60);
 
+	setupGui();
+
 	urColor.r = 0;
 	urColor.g = 255;
 	urColor.b = 0;
@@ -59,6 +61,27 @@ void ofApp::setup() {
 	firstConnection = false;
 }
 
+void ofApp::setupGui() {
+
+	gaussianBlur.addListener(this, &ofApp::gaussianBlurChanged);
+	blur.addListener(this, &ofApp::blurChanged);
+
+	gui.setup();
+	gui.add(screenSize.setup("screen size", ofToString(ofGetWidth()) + "x" + ofToString(ofGetHeight())));
+	gui.add(flipHorizontal.setup("flip horizontally", false));
+	gui.add(flipVertical.setup("flip vertically", false));
+	gui.add(invert.setup("invert", false));
+	gui.add(gaussianBlur.setup("gaussian blur", 1, 1, 20));
+	gui.add(blur.setup("blur", 1, 1, 20));
+	gui.add(thresholdValue.setup("threshold value", 100, 1, 255));
+	gui.add(dilateMultiple.setup("dilation multiple", 0, 0, 10));
+	gui.add(erodeMultiple.setup("erosion multiple", 0, 0, 10));
+	gui.add(polylineSmoothShape.setup("polyline smooth shape", 0.0, 0.0, 1.0));
+	gui.add(polylineSmoothSize.setup("polyline smooth size", 0, 0, 32));
+	gui.add(minContour.setup("minimum contour size", 10000, 0.0, (640 * 360) / 3));
+
+}
+
 //--------------------------------------------------------------
 void ofApp::update() {
 	ofBackground(200,200,200);
@@ -81,28 +104,55 @@ void ofApp::update() {
 	storeMessage(inMessage);
 
 	//---- openCV stuff ------------------------------------------------------
-	//bool bNewFrame = false;
+	bool bNewFrame = false;
 
-	vidGrabber.update();
+	#ifdef _USE_LIVE_VIDEO
+		vidGrabber.update();
+		bNewFrame = vidGrabber.isFrameNew();
+	#else
+		vidPlayer.update();
+		bNewFrame = vidPlayer.isFrameNew();
+	#endif
 
-	if (vidGrabber.isFrameNew()) {
-
+	if (bNewFrame) {
+#ifdef _USE_LIVE_VIDEO
 		colorImg.setFromPixels(vidGrabber.getPixels());
+#else
+		colorImg.setFromPixels(vidPlayer.getPixels());
+#endif
+
+		if (flipHorizontal && flipVertical) {
+			colorImg.mirror(1, 1);
+		}
+		else if (flipHorizontal) {
+			colorImg.mirror(0, 1);
+		}
+		else if (flipVertical) {
+			colorImg.mirror(1, 0);
+		}
+
+		if (invert) {
+			colorImg.invert();
+		}
+
 		grayImage = colorImg;
+		if (bLearnBakground) {
+			grayBg = grayImage;
+			bLearnBakground = false;
+		}
 
-		//if (bLearnBakground == true) {
-		//	grayBg = grayImage;		// the = sign copys the pixels from grayImage into grayBg (operator overloading)
-		//	bLearnBakground = false;
-		//}
-
-		// take the abs value of the difference between background and incoming and then threshold:
 		grayDiff.absDiff(grayBg, grayImage);
-		grayBg = grayImage;
-		grayDiff.threshold(threshold);
+		grayDiff.blur(blur);
+		grayDiff.blurGaussian(gaussianBlur);
+		grayDiff.threshold(thresholdValue);
+		for (int i = 0; i < dilateMultiple; i++) {
+			grayDiff.dilate();
+		}
+		for (int i = 0; i < erodeMultiple; i++) {
+			grayDiff.erode();
+		}
 
-		// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
-		// also, find holes is set to true so we will get interior contours as well....
-		contourFinder.findContours(grayDiff, 500, (340 * 240) / 3, 4, true);	// find holes
+		contourFinder.findContours(grayDiff, minContour, (320 * 240) / 3, 10, false);
 
 		//this vector needs to be reset everytime
 		allBlobs.clear();
@@ -122,14 +172,57 @@ void ofApp::update() {
 			}
 		}
 
-
 		sendPoints(allBlobs);
-		//testPoints(posData);
 	}
+
+	//vidGrabber.update();
+
+	//if (vidGrabber.isFrameNew()) {
+
+	//	colorImg.setFromPixels(vidGrabber.getPixels());
+	//	grayImage = colorImg;
+
+	//	//if (bLearnBakground == true) {
+	//	//	grayBg = grayImage;		// the = sign copys the pixels from grayImage into grayBg (operator overloading)
+	//	//	bLearnBakground = false;
+	//	//}
+
+	//	// take the abs value of the difference between background and incoming and then threshold:
+	//	grayDiff.absDiff(grayBg, grayImage);
+	//	grayBg = grayImage;
+	//	grayDiff.threshold(threshold);
+
+	//	// find contours which are between the size of 20 pixels and 1/3 the w*h pixels.
+	//	// also, find holes is set to true so we will get interior contours as well....
+	//	contourFinder.findContours(grayDiff, 500, (340 * 240) / 3, 4, true);	// find holes
+
+	//	//this vector needs to be reset everytime
+	//	allBlobs.clear();
+
+	//	if (contourFinder.nBlobs != 0) { //crucial - will get a vector out of range without it
+	//		std::cout << "Original amount of blobs: " << contourFinder.nBlobs << "\n";
+	//		for (int i = 0; i < contourFinder.nBlobs; i++) { //add this in to create a vector containing points from all blobs
+	//			scaleData.clear();
+	//			posData.clear();
+	//			for (int t = 0; t < contourFinder.blobs[i].nPts; t++) {
+	//				//posData.push_back(contourFinder.blobs[i].pts[t]);
+	//				scaleData.push_back(contourFinder.blobs[i].pts[t]);
+	//				scaleData[t][0] = ofMap(scaleData[t][0], 0.0, 320.0, 0.0, 1024.0, true);
+	//				scaleData[t][1] = ofMap(scaleData[t][1], 0.0, 240.0, 0.0, 768.0, true);
+	//			}
+	//			allBlobs.push_back(scaleData);
+	//		}
+	//	}
+
+
+	//	sendPoints(allBlobs);
+	//	//testPoints(posData);
+	//}
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
+	ofBackgroundGradient(ofColor::white, ofColor::gray);
 
 	// draw the original local video image
 	ofSetHexColor(0xffffff);
@@ -172,6 +265,10 @@ void ofApp::draw() {
 
 	ofPopStyle();
 	
+	// Draw GUI
+	if (!bHide) {
+		gui.draw();
+	}
 }
 
 //--------------------------------------------------------------
@@ -182,16 +279,32 @@ void ofApp::keyPressed(int key) {
 		ofBackground(ofColor::white);
 		bShowVideo = !bShowVideo;
 		break;
-	case '+':
-		threshold++;
-		if (threshold > 255) threshold = 255;
+	case 'h':
+		bHide = !bHide; // Toggle GUI
 		break;
-	case '-':
-		threshold--;
-		if (threshold < 0) threshold = 0;
+	case 's':
+		gui.saveToFile("settings.xml"); // Save GUI Settings
+		break;
+	case 'l':
+		gui.loadFromFile("settings.xml"); // Load GUI Settings
+		break;
+	case ' ':
+		bLearnBakground = true; // Re-save background for difference.
 		break;
 	}
 }
+
+
+void ofApp::gaussianBlurChanged(int &change) {
+	if (change % 2 == 0) gaussianBlur = change + 1;
+	else gaussianBlur = change;
+}
+
+void ofApp::blurChanged(int &change) {
+	if (change % 2 == 0) blur = change + 1;
+	else blur = change;
+}
+
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key) {
@@ -223,6 +336,7 @@ void ofApp::mouseExited(int x, int y) {
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h) {
+	screenSize = ofToString(w) + "x" + ofToString(h);
 }
 
 //--------------------------------------------------------------

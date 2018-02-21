@@ -55,7 +55,7 @@ void ofApp::setup() {
 	udpConnection.Bind(ipPort);
 	//if the subnet splat method isn't working as intended manually enter your partner's IP
 	//udpConnection.Connect(charSplat, ipPort);
-	udpConnection.Connect("172.16.14.53", ipPort);
+	udpConnection.Connect("192.168.1.161", ipPort);
 	udpConnection.SetNonBlocking(true);
 
 	incomingIP = "";
@@ -548,8 +548,8 @@ void ofApp::storeMessage(string inMess) {
 					y = atof(point[1].c_str());
 					remotePos.push_back(ofPoint(x, y));
 				}
-				allRem.push_back(remotePos);
 			}
+			allRem.push_back(remotePos);
 
 		}
 		

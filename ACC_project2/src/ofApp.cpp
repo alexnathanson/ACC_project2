@@ -53,7 +53,7 @@ void ofApp::setup() {
 	udpConnection.Bind(ipPort);
 	//if the subnet splat method isn't working as intended manually enter your partner's IP
 	//udpConnection.Connect(charSplat, ipPort);
-	udpConnection.Connect("172.16.14.238", ipPort);
+	udpConnection.Connect("172.16.31.23", ipPort);
 	udpConnection.SetNonBlocking(true);
 
 	incomingIP = "";
@@ -150,7 +150,7 @@ void ofApp::update() {
 			grayDiff.erode();
 		}
 
-		contourFinder.findContours(grayDiff, minContour, (320 * 240) / 3, 10, false);
+		contourFinder.findContours(grayDiff, minContour, (320 * 240) / 3, 1, false);
 
 		//this vector needs to be reset everytime
 		allBlobs.clear();
@@ -469,7 +469,7 @@ void ofApp::storeMessage(string inMess) {
 			remotePos.clear();
 
 			//Use this code if delineating by blob
-			/*blobVect.clear();
+			blobVect.clear();
 			blobVect = ofSplitString(inMess, "[$]");
 
 			if (blobVect.size() != 0) {
@@ -485,10 +485,10 @@ void ofApp::storeMessage(string inMess) {
 					}
 					allRem.push_back(remotePos);
 				}
-			}*/
+			}
 		
 			//use this code if not delineating by blob
-			strPoints = ofSplitString(inMess, "[/p]");
+			/*strPoints = ofSplitString(inMess, "[/p]");
 			for (unsigned int i = 0; i < strPoints.size(); i++) {
 				vector<string> point = ofSplitString(strPoints[i], "|");
 				if (point.size() == 2) {
@@ -497,7 +497,7 @@ void ofApp::storeMessage(string inMess) {
 					remotePos.push_back(ofPoint(x, y));
 				}
 			}
-			allRem.push_back(remotePos);
+			allRem.push_back(remotePos);*/
 		}
 		
 	}
@@ -514,7 +514,7 @@ void ofApp::sendPoints(vector<vector <ofPoint>> points) {
 		}
 
 		//delineates end of a blob - only neccessary if you need to seperate specific blobs when you draw
-		//outMessage += "[$]"; 
+		outMessage += "[$]"; 
 	}
 
 	//put your IP address in as a filter header
@@ -543,9 +543,9 @@ void ofApp::drawBodyContour(vector<vector <ofPoint> > points, ofColor c) {
 			ofPoint aPoint = scalePoint(points[i][b]);
 			//p.addVertex(points[i][b].x, points[i][b].y);
 			p.addVertex(aPoint.x, aPoint.y);
-
 		}
 		p = p.getSmoothed(polylineSmoothSize, polylineSmoothShape);
+		p.close();
 		polylines.push_back(p);
 	}
 
@@ -560,17 +560,18 @@ void ofApp::drawBodyContour(vector<vector <ofPoint> > points, ofColor c) {
 		ofScale(0.5, 0.5);
 
 		for (auto & line : polylines) {
-			ofNoFill();
-			ofSetColor(c);
 			line.draw();
+			//ofNoFill();
+			//ofSetColor(c);
+			//line.draw();
 
-			// draw filled polyline
+			//// draw filled polyline
 
-			ofBeginShape();
-			for (int i = 0; i < line.getVertices().size(); i++) {
-				ofVertex(line.getVertices().at(i).x, line.getVertices().at(i).y);
-			}
-			ofEndShape();
+			//ofBeginShape();
+			//for (int i = 0; i < line.getVertices().size(); i++) {
+			//	ofVertex(line.getVertices().at(i).x, line.getVertices().at(i).y);
+			//}
+			//ofEndShape();
 		}
 
 		ofPopMatrix();

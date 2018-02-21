@@ -458,7 +458,7 @@ void ofApp::storeMessage(string inMess) {
 			}*/
 		} else {
 			//strip the IP off - not necessary becasue the if statement disregards splits larger than 2
-			inMess = inMess.erase(0, idLen);
+			inMess = inMess.erase(0, idLen - 1);
 
 			remotePos.clear();
 

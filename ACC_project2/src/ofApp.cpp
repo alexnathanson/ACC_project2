@@ -484,7 +484,7 @@ void ofApp::storeMessage(string inMess) {
 		//would be rad to generate a unique color (hash method? from their IP?
 		
 		if (inMess.substr(0, idLen) == myIP[0]) {
-
+			/*
 			//strip the IP off
 			//inMess = inMess.erase(0, idLen);
 			//std::cout << "test" << "\n";
@@ -499,7 +499,7 @@ void ofApp::storeMessage(string inMess) {
 					y = atof(point[1].c_str());
 					localPos.push_back(ofPoint(x, y));
 				}
-			}
+			}*/
 		} else {
 			//strip the IP off - not necessary becasue the if statement disregards splits larger than 2
 			//inMess = inMess.erase(0, idLen);
@@ -515,16 +515,18 @@ void ofApp::storeMessage(string inMess) {
 			allRem.clear();
 			strPoints.clear();
 
-			for (int v = 0; v < blobVect.size(); v++) {
-				strPoints = ofSplitString(blobVect[v], "[/p]");
-				for (unsigned int i = 0; i < strPoints[v].size(); i++) {
-					vector<string> point = ofSplitString(strPoints[v], "|");
-					if (point.size() == 2) {
-						x = atof(point[0].c_str());
-						y = atof(point[1].c_str());
-						remotePos.push_back(ofPoint(x, y));
+			if (blobVect.size() != 0) {
+				for (int v = 0; v < blobVect.size(); v++) {
+					strPoints = ofSplitString(blobVect[v], "[/p]");
+					for (unsigned int i = 0; i < strPoints[v].size(); i++) {
+						vector<string> point = ofSplitString(strPoints[v], "|");
+						if (point.size() == 2) {
+							x = atof(point[0].c_str());
+							y = atof(point[1].c_str());
+							remotePos.push_back(ofPoint(x, y));
+						}
+						allRem.push_back(remotePos);
 					}
-					allRem.push_back(remotePos);
 				}
 			}
 		}

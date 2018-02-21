@@ -130,5 +130,6 @@ public:
 
 	void drawBodyContour(vector<vector <ofPoint> > points, ofColor c);
 
+	ofPoint scalePoint(ofPoint toScale);
 };
 

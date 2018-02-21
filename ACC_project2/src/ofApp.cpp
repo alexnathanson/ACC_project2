@@ -53,7 +53,7 @@ void ofApp::setup() {
 	udpConnection.Bind(ipPort);
 	//if the subnet splat method isn't working as intended manually enter your partner's IP
 	//udpConnection.Connect(charSplat, ipPort);
-	udpConnection.Connect("172.16.31.23", ipPort);
+	udpConnection.Connect("172.16.14.238", ipPort);
 	udpConnection.SetNonBlocking(true);
 
 	incomingIP = "";
@@ -162,8 +162,8 @@ void ofApp::update() {
 				for (int t = 0; t < contourFinder.blobs[i].nPts; t++) {
 					//posData.push_back(contourFinder.blobs[i].pts[t]);
 					scaleData.push_back(contourFinder.blobs[i].pts[t]);
-					scaleData[t][0] = ofMap(scaleData[t][0], 0.0, 320.0, 0.0, 1024.0, true);
-					scaleData[t][1] = ofMap(scaleData[t][1], 0.0, 240.0, 0.0, 768.0, true);
+					//scaleData[t][0] = ofMap(scaleData[t][0], 0.0, 320.0, 0.0, ofGetWidth(), true);
+					//scaleData[t][1] = ofMap(scaleData[t][1], 0.0, 240.0, 0.0, ofGetHeight(), true);
 				}
 				allBlobs.push_back(scaleData);
 			}
@@ -526,7 +526,9 @@ void ofApp::drawPoints(vector<vector <ofPoint> > points) {
 	for (int i = 0; i<points.size(); i++) {
 		//std::cout << "Draw these blobs: " + points.size() << "\n";
 		for (int b = 0; b < points[i].size(); b++) {
-			ofDrawEllipse(points[i][b], 5, 5);
+			ofPoint aPoint = scalePoint(points[i][b]);
+			//ofDrawEllipse(points[i][b], 5, 5);
+			ofDrawEllipse(aPoint, 5, 5);
 		}
 	}
 }
@@ -538,7 +540,10 @@ void ofApp::drawBodyContour(vector<vector <ofPoint> > points, ofColor c) {
 	for (int i = 0; i<points.size(); i++) {
 		ofPolyline p;
 		for (int b = 0; b < points[i].size(); b++) {
-			p.addVertex(points[i][b].x, points[i][b].y);
+			ofPoint aPoint = scalePoint(points[i][b]);
+			//p.addVertex(points[i][b].x, points[i][b].y);
+			p.addVertex(aPoint.x, aPoint.y);
+
 		}
 		p = p.getSmoothed(polylineSmoothSize, polylineSmoothShape);
 		polylines.push_back(p);
@@ -573,4 +578,12 @@ void ofApp::drawBodyContour(vector<vector <ofPoint> > points, ofColor c) {
 	}
 	
 
+}
+
+ofPoint ofApp::scalePoint(ofPoint toScale){
+
+	toScale.x = ofMap(toScale.x, 0.0, 320.0, 0.0, ofGetWidth(), true);
+	toScale.y = ofMap(toScale.y, 0.0, 240.0, 0.0, ofGetHeight(), true);
+
+	return toScale;
 }

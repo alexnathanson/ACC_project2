@@ -61,6 +61,8 @@ void ofApp::setup() {
 
 	effect = 1;
 	contAmt = 1;
+
+	repeatFBO.allocate(1024, 768, GL_RGBA);
 }
 
 void ofApp::setupGui() {
@@ -236,6 +238,10 @@ void ofApp::draw() {
 			drawBodyContour(allBlobs, urColor);
 			drawBodyContour(allRem, remColor);
 			break;
+	case 3: drawSceneThree(allBlobs);
+			drawSceneOneLocal(allRem);
+			break;
+
 	}
 
 	ofPopStyle();
@@ -271,6 +277,9 @@ void ofApp::keyPressed(int key) {
 		break;
 	case '2':
 		effect = 2;
+		break;
+	case '3':
+		effect = 3;
 		break;
 	}
 }
@@ -561,6 +570,8 @@ void ofApp::drawSceneOneLocal(vector<vector <ofPoint> > points) {
 	for (int i = 0; i < numPoints; i++) {
 
 		ofPushMatrix();
+		ofPushStyle();
+		ofSetLineWidth(3);
 
 			ofTranslate(radius * sin(angle * i + ofGetElapsedTimef() * 0.25), radius * cos(angle * i + ofGetElapsedTimef() * 0.25));
 			ofTranslate(ofGetWidth() / 2 - radius / 2, ofGetHeight() / 2 - radius / 2);
@@ -573,6 +584,7 @@ void ofApp::drawSceneOneLocal(vector<vector <ofPoint> > points) {
 				line.draw();
 
 			}
+		ofPopStyle();
 		ofPopMatrix();
 	}
 	ofPopMatrix();
@@ -599,6 +611,30 @@ void ofApp::drawSceneOneRemote(vector<vector <ofPoint> > points) {
 			ofPopMatrix();
 		}
 	ofPopMatrix();
+}
+
+void ofApp::drawSceneThree(vector<vector <ofPoint> > points) {
+	float ratio = ofGetWidth() / 5;
+	vector<ofPolyline> polylines = getBodyContour(points);
+
+	for (auto & line : polylines) {
+		ofNoFill();
+		ofSetColor(0, 0, 255, 255);
+		ofPushStyle();
+		ofSetLineWidth(8);
+
+		for (int row = 0; row < ofGetWidth(); row += ratio) {
+			for (int col = 0; col < ofGetHeight(); col += ratio) {
+				ofPushMatrix();
+					ofTranslate(row, col);
+					ofScale(0.2, 0.2);
+					line.draw();
+				ofPopMatrix();
+			}
+		}
+		ofPopStyle();
+	}
+
 }
 
 vector<ofPolyline> ofApp::getBodyContour(vector<vector <ofPoint> > points) {
@@ -643,7 +679,8 @@ void ofApp::drawBodyContour(vector<vector <ofPoint> > points, ofColor c) {
 
 	for (int i = 0; i < 360; i += 60) {
 		ofPushMatrix();
-
+		ofPushStyle();
+		ofSetLineWidth(2.0);
 		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 		ofRotate(i);
 		ofTranslate(-ofGetWidth() / 2, -ofGetHeight() / 2);
@@ -675,7 +712,7 @@ void ofApp::drawBodyContour(vector<vector <ofPoint> > points, ofColor c) {
 			//	ofEndShape();
 			//}
 		}
-
+		ofPopStyle();
 		ofPopMatrix();
 
 	}

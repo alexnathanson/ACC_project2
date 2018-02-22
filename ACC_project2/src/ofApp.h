@@ -138,7 +138,8 @@ public:
 	void drawSceneOneLocal(vector<vector <ofPoint> > points);
 	void drawSceneOneRemote(vector<vector <ofPoint> > points);
 
-
+	void drawSceneThree(vector<vector <ofPoint> > points);
+	ofFbo repeatFBO;
 	ofPoint scalePoint(ofPoint toScale);
 };
 

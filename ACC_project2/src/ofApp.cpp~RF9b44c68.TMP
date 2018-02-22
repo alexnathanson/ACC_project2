@@ -59,8 +59,7 @@ void ofApp::setup() {
 	incomingIP = "";
 	firstConnection = false;
 
-	effect = 1;
-	contAmt = 1;
+	effect = 0;
 }
 
 void ofApp::setupGui() {
@@ -159,7 +158,7 @@ void ofApp::update() {
 			grayDiff.erode();
 		}
 
-		contourFinder.findContours(grayDiff, minContour, (320 * 240) / 3, contAmt, false);
+		contourFinder.findContours(grayDiff, minContour, (320 * 240) / 3, 4, false);
 
 		//this vector needs to be reset everytime
 		allBlobs.clear();
@@ -226,10 +225,10 @@ void ofApp::draw() {
 	//drawBodyContour(allRem, remColor);
 
 	switch (effect) {
-	case 1: drawSceneOneLocal(allBlobs);
+	case 0: drawSceneOneLocal(allBlobs);
 			drawSceneOneRemote(allRem);
 			break;
-	case 2: ofSetColor(urColor);
+	case 1: ofSetColor(urColor);
 			drawPoints(allBlobs);
 			ofSetColor(remColor);
 			drawPoints(allRem);
@@ -268,10 +267,8 @@ void ofApp::keyPressed(int key) {
 		break;
 	case '1':
 		effect = 1;
-		break;
-	case '2':
-		effect = 2;
-		break;
+	case '0':
+		effect = 0;
 	}
 }
 
@@ -445,7 +442,6 @@ void ofApp::confirmContact(string inMess) {
 		incomingIP = ofToString(remIP[0]);
 		//std::cout << "Ip Address: " << incomingIP << "\n";
 		firstConnection = true;
-		remSize = incomingIP.length();
 	}
 	else
 	{
@@ -484,10 +480,7 @@ void ofApp::storeMessage(string inMess) {
 			}*/
 		} else {
 			//strip the IP off - not necessary becasue the if statement disregards splits larger than 2
-			if (remIP[0].size() != 0) {
-				int ipStart = inMess.find(remIP[0]);
-				inMess = inMess.erase(ipStart, remSize);
-			}
+			inMess = inMess.erase(0, idLen);
 
 			remotePos.clear();
 

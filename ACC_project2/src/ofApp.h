@@ -115,7 +115,7 @@ public:
 	string subnetSplat;
 
 	int idLen;
-
+	int remSize;
 	void confirmContact(string inMess);
 
 	string inMessage;
@@ -132,6 +132,8 @@ public:
 
 	void drawBodyContour(vector<vector <ofPoint> > points, ofColor c);
 
+	int contAmt;
+	int effect;
 	vector<ofPolyline> getBodyContour(vector<vector <ofPoint> > points);
 	void drawSceneOneLocal(vector<vector <ofPoint> > points);
 	void drawSceneOneRemote(vector<vector <ofPoint> > points);

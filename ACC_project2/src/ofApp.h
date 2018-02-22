@@ -56,6 +56,7 @@ public:
 	ofxToggle			invert;
 	ofxIntSlider		gaussianBlur;
 	ofxIntSlider		blur;
+	ofxToggle			thresholdInvert;
 	ofxIntSlider		thresholdValue;
 	ofxIntSlider		dilateMultiple;
 	ofxIntSlider		erodeMultiple;
@@ -127,8 +128,14 @@ public:
 	void sendPoints(vector<vector <ofPoint> > points);
 
 	void drawPoints(vector<vector <ofPoint> > points);
+	
 
 	void drawBodyContour(vector<vector <ofPoint> > points, ofColor c);
+
+	vector<ofPolyline> getBodyContour(vector<vector <ofPoint> > points);
+	void drawSceneOneLocal(vector<vector <ofPoint> > points);
+	void drawSceneOneRemote(vector<vector <ofPoint> > points);
+
 
 	ofPoint scalePoint(ofPoint toScale);
 };

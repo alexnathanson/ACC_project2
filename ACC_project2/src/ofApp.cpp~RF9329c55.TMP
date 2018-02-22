@@ -171,6 +171,7 @@ void ofApp::update() {
 				allBlobs.push_back(scaleData);
 			}
 		}
+
 	}
 	
 	sendPoints(allBlobs);
@@ -217,14 +218,13 @@ void ofApp::draw() {
 	//drawPoints(allBlobs);
 
 	//ofSetColor(remColor);
-	//drawPoints(allRem);
+	drawPoints(allRem);
 
 	//drawBodyContour(allBlobs, urColor);
-	//drawBodyContour(allRem, remColor);
+	drawBodyContour(allRem, remColor);
 
 	if (ofGetElapsedTimef() > 0) {
 		drawSceneOneLocal(allBlobs);
-		drawSceneOneRemote(allRem);
 	}
 
 	ofPopStyle();
@@ -531,53 +531,37 @@ void ofApp::sendPoints(vector<vector <ofPoint>> points) {
 }
 
 void ofApp::drawSceneOneLocal(vector<vector <ofPoint> > points) {
-	int numPoints = 12;
+	int numPoints = 16;
 	float radius = ofGetWidth() / 5;
 	float angle = TWO_PI / (float)numPoints;
 	vector<ofPolyline> polylines = getBodyContour(points);
 	ofPushMatrix();
-
+	ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
+	ofRotate(ofGetElapsedTimef());
+	ofTranslate(-ofGetWidth() / 2, -ofGetHeight() / 2);
 	for (int i = 0; i < numPoints; i++) {
 
 		ofPushMatrix();
-
-			ofTranslate(radius * sin(angle * i + ofGetElapsedTimef() * 0.25), radius * cos(angle * i + ofGetElapsedTimef() * 0.25));
+			ofTranslate(radius * sin(angle * i), radius * cos(angle * i));
 			ofTranslate(ofGetWidth() / 2 - radius / 2, ofGetHeight() / 2 - radius / 2);
-			ofScale(0.25, 0.25);
+			ofScale(0.18, 0.18);
 		
 			for (auto & line : polylines) {
 
 				ofNoFill();
-				ofSetColor(255, 0, 0, 255);
+				ofSetColor(255, 0, 0, 100);
 				line.draw();
-
+				ofBeginShape();
+				for (int i = 0; i < line.getVertices().size(); i++) {
+					ofVertex(line.getVertices().at(i).x, line.getVertices().at(i).y);
+				}
+				ofEndShape();
 			}
 		ofPopMatrix();
+
 	}
 	ofPopMatrix();
-}
 
-void ofApp::drawSceneOneRemote(vector<vector <ofPoint> > points) {
-	vector<ofPolyline> polylines = getBodyContour(points);
-	ofPushMatrix();
-		ofSetColor(255);
-		//ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
-
-		for (auto & line : polylines) {
-			ofRectangle r = line.getBoundingBox();
-			float w = r.getWidth();
-			float h = r.getHeight(); 
-			ofPushMatrix();
-			ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
-			ofScale(0.5, 0.5);
-			ofTranslate(-ofGetWidth() / 2, -ofGetHeight() / 2);
-
-			ofNoFill();
-			ofSetColor(255, 255);
-			line.draw();
-			ofPopMatrix();
-		}
-	ofPopMatrix();
 }
 
 vector<ofPolyline> ofApp::getBodyContour(vector<vector <ofPoint> > points) {
@@ -585,15 +569,15 @@ vector<ofPolyline> ofApp::getBodyContour(vector<vector <ofPoint> > points) {
 	vector<ofPolyline> polylines;
 
 	for (int i = 0; i<points.size(); i++) {
-		if (points[i].size() != 0) {
-			ofPolyline p;
-			for (int b = 0; b < points[i].size(); b++) {
-				ofPoint aPoint = scalePoint(points[i][b]);
-				p.addVertex(aPoint.x, aPoint.y);
-			}
-			p = p.getSmoothed(polylineSmoothSize, polylineSmoothShape);
-			polylines.push_back(p);
+		ofPolyline p;
+		for (int b = 0; b < points[i].size(); b++) {
+			ofPoint aPoint = scalePoint(points[i][b]);
+			//p.addVertex(points[i][b].x, points[i][b].y);
+			p.addVertex(aPoint.x, aPoint.y);
 		}
+		p = p.getSmoothed(polylineSmoothSize, polylineSmoothShape);
+		p.close();
+		polylines.push_back(p);
 	}
 
 	return polylines;
@@ -646,14 +630,11 @@ void ofApp::drawBodyContour(vector<vector <ofPoint> > points, ofColor c) {
 
 			// draw filled polyline
 
-			//if (line.getVertices().size() != 0) {
-
-			//	ofBeginShape();
-			//	for (int i = 0; i < line.getVertices().size(); i++) {
-			//		ofVertex(line.getVertices().at(i).x, line.getVertices().at(i).y);
-			//	}
-			//	ofEndShape();
-			//}
+			ofBeginShape();
+			for (int i = 0; i < line.getVertices().size(); i++) {
+				ofVertex(line.getVertices().at(i).x, line.getVertices().at(i).y);
+			}
+			ofEndShape();
 		}
 
 		ofPopMatrix();

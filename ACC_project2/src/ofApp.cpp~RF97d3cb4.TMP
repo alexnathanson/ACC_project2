@@ -580,6 +580,8 @@ void ofApp::drawSceneOneRemote(vector<vector <ofPoint> > points) {
 	ofPopMatrix();
 }
 
+
+
 vector<ofPolyline> ofApp::getBodyContour(vector<vector <ofPoint> > points) {
 
 	vector<ofPolyline> polylines;

@@ -531,7 +531,7 @@ void ofApp::sendPoints(vector<vector <ofPoint>> points) {
 }
 
 void ofApp::drawSceneOneLocal(vector<vector <ofPoint> > points) {
-	int numPoints = 12;
+	int numPoints = 16;
 	float radius = ofGetWidth() / 5;
 	float angle = TWO_PI / (float)numPoints;
 	vector<ofPolyline> polylines = getBodyContour(points);
@@ -541,14 +541,14 @@ void ofApp::drawSceneOneLocal(vector<vector <ofPoint> > points) {
 
 		ofPushMatrix();
 
-			ofTranslate(radius * sin(angle * i + ofGetElapsedTimef() * 0.25), radius * cos(angle * i + ofGetElapsedTimef() * 0.25));
+			ofTranslate(radius * sin(angle * i), radius * cos(angle * i));
 			ofTranslate(ofGetWidth() / 2 - radius / 2, ofGetHeight() / 2 - radius / 2);
-			ofScale(0.25, 0.25);
+			ofScale(0.18, 0.18);
 		
 			for (auto & line : polylines) {
 
 				ofNoFill();
-				ofSetColor(255, 0, 0, 255);
+				ofSetColor(255, 0, 0, 100);
 				line.draw();
 
 			}
@@ -561,23 +561,24 @@ void ofApp::drawSceneOneRemote(vector<vector <ofPoint> > points) {
 	vector<ofPolyline> polylines = getBodyContour(points);
 	ofPushMatrix();
 		ofSetColor(255);
-		//ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
+		ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 
 		for (auto & line : polylines) {
 			ofRectangle r = line.getBoundingBox();
 			float w = r.getWidth();
-			float h = r.getHeight(); 
+			float h = r.getHeight();
 			ofPushMatrix();
-			ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
+			ofTranslate(-w / 2, -h / 2);
 			ofScale(0.5, 0.5);
-			ofTranslate(-ofGetWidth() / 2, -ofGetHeight() / 2);
+			ofTranslate(ofGetWidth() / 2, ofGetHeight() / 2);
 
 			ofNoFill();
-			ofSetColor(255, 255);
+			ofSetColor(255, 0, 0, 100);
 			line.draw();
 			ofPopMatrix();
 		}
 	ofPopMatrix();
+
 }
 
 vector<ofPolyline> ofApp::getBodyContour(vector<vector <ofPoint> > points) {
